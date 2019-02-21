@@ -5,6 +5,7 @@
   "license": "MIT",
   "author": "Seito Taka",
   "dependencies": {
-    "cli-autocomplete": "^0.4.1"
+    "cli-autocomplete": "^0.4.1",
+    "execa": "^1.0.0"
   }
 }
