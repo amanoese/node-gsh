@@ -1,20 +1,12 @@
 const autocompletePrompt = require('cli-autocomplete')
+const execa = require('execa')
 
-const colors = [
-	{title: 'red',    value: '#f00'},
-	{title: 'yellow', value: '#ff0'},
-	{title: 'green',  value: '#0f0'},
-	{title: 'blue',   value: '#00f'},
-	{title: 'black',  value: '#000'},
-	{title: 'white',  value: '#fff'}
-]
-const suggestColors = (input) => {
-  return new Promise(resolve => {
-    setTimeout(() => resolve(colors.filter((color) => color.title.slice(0, input.length) === input)) , 500);
-  });
+const suggestExec = async (input) => {
+  let {stdout,cmd} = result  = await execa.shell(input);
+  let title = stdout.split('\n').slice(0,20).join('\n')
+  return [ { title , value: input } ]
 }
 
-autocompletePrompt('What is your favorite color?', suggestColors)
-	.on('data', (e) => console.log('Interim value', e.value))
-	.on('abort', (v) => console.log('Aborted with', v))
-	.on('submit', (v) => console.log('Submitted with', v))
+autocompletePrompt('gsh', suggestExec)
+  //.on('data', (e) => console.log('miss exec', e.value))
+  .on('submit', (v) => console.log(v))
