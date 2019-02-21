@@ -1,0 +1,10 @@
+{
+  "name": "gei-cli-suggest",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "author": "Seito Taka",
+  "dependencies": {
+    "cli-autocomplete": "^0.4.1"
+  }
+}
