@@ -1,24 +1,24 @@
-#!/usr/bin/env node
-const autocompletePrompt = require('cli-autocomplete');
-const execa = require('execa');
+const shellExecDocker = require('./src/shell-exec-docker.js')
+const shellautocomplete = require('./src/shellAutoComplete.js')
+const inquirer = require('inquirer');
 
-let title = ''
-const suggestExec = async (input) => {
-  try {
-    let {stdout,cmd} = await execa.shell(input)
-    this.title =  stdout.split('\n').slice(0,20).join('\n') || title
-  } catch {
-    //any
-  }
-  return [ { title:this.title , value: input } ].filter(v=>v.title)
-}
+inquirer.registerPrompt('autocomplete',shellautocomplete);
 
-let f = ()=>{
-  autocompletePrompt('node-gsh', suggestExec)
-  .on('submit', (...args) => {
-    title = ''
-    f();
-    //execa.shell(args[0]).stdout.pipe(process.stdout)
-  })
-};
-f();
+let dockerName = 'node'
+let prompts = [{
+  type: 'autocomplete',
+  name: 'from',
+  message: 'node-gsh >',
+  pageSize: 20,
+  suggestOnly : true,
+  source: function(answersSoFar, input) {
+    return shellExecDocker.exec(input)
+      .then(({output})=>[output])
+      .catch(_=>[''])
+  },
+}];
+
+inquirer.prompt(prompts).then(async function(answers) {
+  let {output} = await shellExecDocker.exec(answers.from)
+  process.stdout.write(output);
+});

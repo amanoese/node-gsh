@@ -2,13 +2,30 @@
   "name": "gei-cli-suggest",
   "version": "0.0.1",
   "license": "MIT",
+  "repository": "amanoese/gei-suggest-cli",
   "author": "Seito Taka",
-  "dependencies": {
-    "cli-autocomplete": "^0.4.1",
-    "execa": "^1.0.0"
-  },
-  "preferGlobal": true,
   "bin": {
     "node-gsh": "index.js"
-  }
+  },
+  "dependencies": {
+    "cli-autocomplete": "^0.4.1",
+    "dockernode": "^0.1.0",
+    "dockerode": "^2.5.8",
+    "execa": "^1.0.0",
+    "get-stdin": "^7.0.0",
+    "inquirer": "^6.3.1",
+    "inquirer-autocomplete-prompt": "^1.0.1",
+    "prompt-skeleton": "^1.0.2",
+    "strip-ansi": "^5.2.0",
+    "tempy": "^0.3.0"
+  },
+  "preferGlobal": true,
+  "keywords": [
+    "viewer",
+    "cli",
+    "terminal",
+    "console",
+    "ascii",
+    "unicode"
+  ]
 }
