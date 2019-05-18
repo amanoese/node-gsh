@@ -1,12 +1,11 @@
 const Docker = require('dockerode');
 const docker = new Docker();
 
-const getStdin = require('get-stdin');
-const fs = require('fs');
+const fs    = require('fs');
 const tempy = require('tempy');
+const util  = require('util');
 
-const util = require('util');
-const readFileAsync = util.promisify(fs.readFile);
+const readFileAsync  = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
 
 module.exports.exec = (cmd) => {
