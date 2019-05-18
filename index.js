@@ -1,7 +1,8 @@
 const shellExecDocker = require('./src/shell-exec-docker.js')
+const shellautocomplete = require('./src/shellAutoComplete.js')
 const inquirer = require('inquirer');
-const autocomplete = require('inquirer-autocomplete-prompt');
-inquirer.registerPrompt('autocomplete',autocomplete);
+
+inquirer.registerPrompt('autocomplete',shellautocomplete);
 
 let dockerName = 'node'
 let prompts = [{
@@ -9,15 +10,15 @@ let prompts = [{
   name: 'from',
   message: 'node-gsh >',
   pageSize: 20,
-  guggestOnly : true,
+  suggestOnly : true,
   source: function(answersSoFar, input) {
     return shellExecDocker.exec(input)
       .then(({output})=>[output])
       .catch(_=>[''])
-  }
+  },
 }];
 
-inquirer.prompt(prompts).then(function(answers) {
-  console.log(answers.from)
-  //etc
+inquirer.prompt(prompts).then(async function(answers) {
+  let {output} = await shellExecDocker.exec(answers.from)
+  process.stdout.write(output);
 });
