@@ -1,7 +1,7 @@
-let shellDockerExec = require('../shell-exec-docker.js');
+let shellExecDocker = require('../src/shell-exec-docker.js');
 
 (async () =>{
   //let outstr = await shellDockerExec.exec('echo Hello,World!')
-  let outstr = await shellDockerExec.exec('seq 10 | factor')
+  let outstr = await shellExecDocker.exec('seq 20 | factor')
   console.log(JSON.stringify(outstr,null,'  '));
 })();
