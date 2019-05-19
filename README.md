@@ -1,10 +1,10 @@
-gei-cli-suggest
+node-gsh
 ===
 
 ## Install
 
 ```bash
-$ npm i -g gei-cli-suggest
+$ npm i -g node-gsh
 ```
 
 ## Dependency
