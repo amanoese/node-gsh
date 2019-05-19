@@ -16,14 +16,16 @@ const prog = require('caporal');
 prog
 .version('1.0.0')
 .option('-f <file>', 'File to script')
+.option('--name <Name>', 'Name is Using Docker Image Name : default "ubuntu"')
 .action(async function(args, options) {
-  let dockerName = 'node';
-
   let stdinPath = tempy.file({extension: 'shell-gei'});
+  let {name:imageName} = options
   await writeFileAsync(stdinPath,await readFileAsync(options.f||'/dev/null'))
 
   let cmdsuffix = (options.f != null) ?  ' cat /shell-stdin' : '';
+
   let cmd = (input) => cmdsuffix != null ? `${cmdsuffix}${input||''}` : input
+  let execCmd = async (cmd) => await shellExecDocker.exec(cmd,{stdinPath,imageName})
 
   let prompts = [{
     type: 'autocomplete',
@@ -32,14 +34,14 @@ prog
     pageSize: 20,
     suggestOnly : true,
     source: function(answersSoFar, input) {
-      return shellExecDocker.exec(cmd(input),{stdinPath})
+      return execCmd(cmd(input))
         .then(({output})=>[output])
         .catch(_=>[''])
     },
   }];
 
   let answers = await inquirer.prompt(prompts)
-  let {output} = await shellExecDocker.exec(cmd(answers.from),{stdinPath})
+  let {output} = await execCmd(cmd(answers.from))
   process.stdout.write(output);
 });
 

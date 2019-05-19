@@ -10,8 +10,8 @@ const writeFileAsync = util.promisify(fs.writeFile);
 
 module.exports.exec = (cmd,opt) => {
   let option = Object.assign({
-    stdinPath     : '/dev/null',
-    containerName : 'ubuntu'
+    stdinPath : '/dev/null',
+    imageName : 'ubuntu'
   },opt||{})
 
   return new Promise(async (resolve, reject)=>{
@@ -40,12 +40,12 @@ module.exports.exec = (cmd,opt) => {
       }))
     };
 
-    docker.run(option.containerName, ["bash","/shell-gei"], streamFile,{
+    docker.run(option.imageName, ["bash","/shell-gei"], streamFile,{
       Hostconfig: {
         AutoRemove : true,
         Binds: [
           `${cmdPath}:/shell-gei`,
-          `${inTextPath}:/shell-stdin`,
+          `${option.stdinPath}:/shell-stdin`,
         ],
       }
     },docker_callback);
