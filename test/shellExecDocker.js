@@ -1,4 +1,4 @@
-let shellExecDocker = require('../src/shell-exec-docker.js');
+let shellExecDocker = require('../src/shellExecDocker');
 
 (async () =>{
   //let outstr = await shellDockerExec.exec('echo Hello,World!')
