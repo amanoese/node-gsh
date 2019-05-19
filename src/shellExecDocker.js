@@ -28,9 +28,6 @@ module.exports.exec = (cmd) => {
     };
 
     docker.run('ubuntu', ["bash","/shell-gei"], streamFile,{
-      Config: {
-        Tty:!true
-      },
       Hostconfig: {
         AutoRemove : true,
         Binds: [

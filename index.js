@@ -1,5 +1,6 @@
-const shellExecDocker = require('./src/shell-exec-docker.js')
-const shellautocomplete = require('./src/shellAutoComplete.js')
+#!/usr/bin/env node
+const shellExecDocker = require('./src/shellExecDocker');
+const shellautocomplete = require('./src/shellAutoComplete');
 const inquirer = require('inquirer');
 
 inquirer.registerPrompt('autocomplete',shellautocomplete);
