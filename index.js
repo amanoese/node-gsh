@@ -14,7 +14,7 @@ inquirer.registerPrompt('autocomplete',shellautocomplete);
 const prog = require('caporal');
 
 prog
-.version('1.0.0')
+.version(require('./package.json').version)
 .option('-f <file>', 'File to script')
 .option('--name <Name>', 'Name is Using Docker Image Name : default "ubuntu"')
 .action(async function(args, options) {
