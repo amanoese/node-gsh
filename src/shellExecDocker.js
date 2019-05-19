@@ -10,15 +10,14 @@ const writeFileAsync = util.promisify(fs.writeFile);
 
 module.exports.exec = (cmd,opt) => {
   let option = Object.assign({
-    stdin : '',
+    stdinPath     : '/dev/null',
     containerName : 'ubuntu'
   },opt||{})
 
   return new Promise(async (resolve, reject)=>{
-    let cmdPath    = tempy.file({extension: 'shell-gei'});
-    let stdinPath  = tempy.file({extension: 'shell-gei'});
-    let outPath    = tempy.file({extension: 'shell-gei'});
-    let streamFile = fs.createWriteStream(outPath);
+    let cmdPath       = tempy.file({extension: 'shell-gei'});
+    let outPath       = tempy.file({extension: 'shell-gei'});
+    let streamFile    = fs.createWriteStream(outPath);
 
     let outputBase = {
       output:'',
@@ -27,14 +26,9 @@ module.exports.exec = (cmd,opt) => {
       outPath,
     };
 
-    if (cmd == null) {
+    if (cmd == null||cmd == '') {
       resolve(outputBase)
     }
-    //if(option.stdin != '') {
-    //  cmd = 'cat /shell-stdin|' + cmd
-    //  console.log(cmd,option.stdin)
-    //}
-    //await writeFileAsync(stdinPath,option.stdin)
     await writeFileAsync(cmdPath,cmd)
 
 
@@ -51,7 +45,7 @@ module.exports.exec = (cmd,opt) => {
         AutoRemove : true,
         Binds: [
           `${cmdPath}:/shell-gei`,
-          `${stdinPath}:/shell-stdin`,
+          `${inTextPath}:/shell-stdin`,
         ],
       }
     },docker_callback);
