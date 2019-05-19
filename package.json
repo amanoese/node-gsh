@@ -1,8 +1,8 @@
 {
-  "name": "gei-cli-suggest",
+  "name": "node-gsh",
   "version": "0.0.5",
   "license": "MIT",
-  "repository": "amanoese/gei-cli-suggest",
+  "repository": "amanoese/node-gsh",
   "author": "Seito Taka",
   "bin": {
     "node-gsh": "index.js"
