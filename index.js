@@ -36,7 +36,7 @@ prog
     source: function(answersSoFar, input) {
       return execCmd(cmd(input))
         .then(({output})=>[output])
-        .catch(_=>[''])
+        .catch(e=>[JSON.stringify(e,null,'  ')])
     },
   }];
 

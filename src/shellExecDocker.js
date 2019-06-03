@@ -9,10 +9,8 @@ const readFileAsync  = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
 
 module.exports.exec = (cmd,opt) => {
-  let option = Object.assign({
-    stdinPath : '/dev/null',
-    imageName : 'ubuntu'
-  },opt||{})
+  let stdinPath = opt.stdinPath || '/dev/null'
+  let imageName = opt.imageName ||  'ubuntu'
 
   return new Promise(async (resolve, reject)=>{
     let cmdPath       = tempy.file({extension: 'shell-gei'});
@@ -40,12 +38,12 @@ module.exports.exec = (cmd,opt) => {
       }))
     };
 
-    docker.run(option.imageName, ["bash","/shell-gei"], streamFile,{
+    docker.run(imageName, ["bash","/shell-gei"], streamFile,{
       Hostconfig: {
         AutoRemove : true,
         Binds: [
           `${cmdPath}:/shell-gei`,
-          `${option.stdinPath}:/shell-stdin`,
+          `${stdinPath}:/shell-stdin`,
         ],
       }
     },docker_callback);
