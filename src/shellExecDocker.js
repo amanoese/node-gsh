@@ -7,6 +7,11 @@ const util  = require('util');
 
 const readFileAsync  = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
+const dockerRunAsync = (imageName,cmd,stream,option,callback)=> {
+  return new Promise((resolve,reject)=>{
+    docker.run(imageName,cmd,stream,option,(...args)=> resolve(args));
+  })
+}
 
 module.exports.exec = async (cmd,opt={}) => {
   let stdinPath = opt.stdinPath || '/dev/null'
@@ -23,29 +28,26 @@ module.exports.exec = async (cmd,opt={}) => {
     outPath,
   };
 
-  let docker_run_p = ({imageName,cmdPath,stdinPath,streamFile})=> {
-    return new Promise((resolve,reject)=>{
-      docker.run(imageName, ["bash","/shell-gei"], streamFile ,{
-        Hostconfig: {
-          AutoRemove : true,
-          Binds: [
-            `${cmdPath}:/shell-gei`,
-            `${stdinPath}:/shell-stdin`,
-          ],
-        }
-      },(err, data, container)=>{
-        if(err){ reject(err) }
-        resolve(data)
-      });
-    })
-  }
-
   if (cmd == null||cmd == '') {
     return outputBase
   }
   await writeFileAsync(cmdPath,cmd)
 
-  await docker_run_p({imageName,cmdPath,stdinPath,streamFile});
+  let [ err, data, container ] = await dockerRunAsync(
+    imageName,
+    ["bash","/shell-gei"],
+    streamFile,
+    {
+      Hostconfig: {
+        AutoRemove : true,
+        Binds: [
+          `${cmdPath}:/shell-gei`,
+          `${stdinPath}:/shell-stdin`,
+        ]
+      }
+    }
+  );
+  if (err) { throw err }
 
   let output = await readFileAsync(outPath,  {encoding : 'utf8'})
 
