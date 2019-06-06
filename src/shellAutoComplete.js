@@ -30,7 +30,7 @@ class shellautocomplete extends autocomplete {
       content += chalk.cyan(this.shortAnswer || this.answerName || this.answer);
     } else if (this.searching) {
       content += this.rl.line;
-      bottomContent += '  ' + chalk.dim('Searching...');
+      bottomContent += '  ' + chalk.dim('Executing...');
     } else if (this.currentChoices.length) {
       var choicesStr = listRender(this.currentChoices, this.selected);
       content += this.rl.line;

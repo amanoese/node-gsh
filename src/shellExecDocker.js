@@ -8,44 +8,48 @@ const util  = require('util');
 const readFileAsync  = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
 
-module.exports.exec = (cmd,opt) => {
+module.exports.exec = async (cmd,opt={}) => {
   let stdinPath = opt.stdinPath || '/dev/null'
   let imageName = opt.imageName ||  'ubuntu'
 
-  return new Promise(async (resolve, reject)=>{
-    let cmdPath       = tempy.file({extension: 'shell-gei'});
-    let outPath       = tempy.file({extension: 'shell-gei'});
-    let streamFile    = fs.createWriteStream(outPath);
+  let cmdPath       = tempy.file({extension: 'shell-gei'});
+  let outPath       = tempy.file({extension: 'shell-gei'});
+  let streamFile    = fs.createWriteStream(outPath);
 
-    let outputBase = {
-      output:'',
-      cmd,
-      cmdPath,
-      outPath,
-    };
+  let outputBase = {
+    output:'',
+    cmd,
+    cmdPath,
+    outPath,
+  };
 
-    if (cmd == null||cmd == '') {
-      resolve(outputBase)
-    }
-    await writeFileAsync(cmdPath,cmd)
+  let docker_run_p = ({imageName,cmdPath,stdinPath,streamFile})=> {
+    return new Promise((resolve,reject)=>{
+      docker.run(imageName, ["bash","/shell-gei"], streamFile ,{
+        Hostconfig: {
+          AutoRemove : true,
+          Binds: [
+            `${cmdPath}:/shell-gei`,
+            `${stdinPath}:/shell-stdin`,
+          ],
+        }
+      },(err, data, container)=>{
+        if(err){ reject(err) }
+        resolve(data)
+      });
+    })
+  }
 
+  if (cmd == null||cmd == '') {
+    return outputBase
+  }
+  await writeFileAsync(cmdPath,cmd)
 
-    let docker_callback = async function (err, data, container) {
-      let output = await readFileAsync(outPath,  {encoding : 'utf8'})
-      //process.stdout.write(outstr);
-      resolve(Object.assign(outputBase,{
-        output: output.replace(/\r\n/g,'\n'),
-      }))
-    };
+  await docker_run_p({imageName,cmdPath,stdinPath,streamFile});
 
-    docker.run(imageName, ["bash","/shell-gei"], streamFile,{
-      Hostconfig: {
-        AutoRemove : true,
-        Binds: [
-          `${cmdPath}:/shell-gei`,
-          `${stdinPath}:/shell-stdin`,
-        ],
-      }
-    },docker_callback);
-  });
+  let output = await readFileAsync(outPath,  {encoding : 'utf8'})
+
+  return Object.assign(outputBase,{
+    output: output.replace(/\r\n/g,'\n'),
+  })
 };
