@@ -7,6 +7,7 @@ const util  = require('util');
 
 const readFileAsync  = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
+const copyFileAsync = util.promisify(fs.copyFile);
 
 const dockerRunAsync = (imageName,cmd,stream,option,callback)=> {
   return new Promise((resolve,reject)=>{
@@ -27,20 +28,28 @@ module.exports = {
             `${tempdir}:/app`,
           ]
         },
+        WorkingDir : '/app',
         ...options
     });
     let data = await container.start({})
 
     return { container, data ,tempdir }
   },
-  dockerExec : async (container,tempdir,cmd) => {
+  dockerExec : async (container,tempdir,cmd,options={}) => {
+    let outputBase = { stdout:'', stderr:'', cmd }
+    
+    if (cmd == null||cmd == '') {
+      return outputBase
+    }
+
+    await copyFileAsync(options.stdinPath || '/dev/null',tempdir + '/shell-stdin')
     await writeFileAsync(tempdir + '/shell-gei',cmd)
 
     let stdout = tempy.file({extension: 'shell-gei'});
     let stderr = tempy.file({extension: 'shell-gei'});
 
     let exec = await container.exec({
-        Cmd: ['bash', '/app/shell-gei'],
+        Cmd: ['bash', 'shell-gei'],
         AttachStdout: true,
         AttachStderr: true
     });
@@ -49,51 +58,29 @@ module.exports = {
     docker.modem.demuxStream(stream.output, fs.createWriteStream(stdout),fs.createWriteStream(stderr));
 
     return await new Promise((resolve,reject)=>{
-        stream.output.on('end', () => {
-            resolve({ stdout, stderr });
+        stream.output.on('end', async () => {
+            resolve({
+                ...outputBase,
+                stdout : (await readFileAsync(stdout,  {encoding : 'utf8'})).replace(/\r\n/g,'\n'),
+                stderr : (await readFileAsync(stderr,  {encoding : 'utf8'})).replace(/\r\n/g,'\n')
+            });
         });
     });
   },
-  exec : async (cmd,opt={}) => {
-    let stdinPath = opt.stdinPath || '/dev/null'
-    let imageName = opt.imageName ||  'ubuntu'
-
-    let cmdPath       = tempy.file({extension: 'shell-gei'});
-    let outPath       = tempy.file({extension: 'shell-gei'});
-    let streamFile    = fs.createWriteStream(outPath);
-
-    let outputBase = {
-      output:'',
-      cmd,
-      cmdPath,
-      outPath,
-    };
-
-    if (cmd == null||cmd == '') {
-      return outputBase
+  container : null,
+  tempdir : null,
+  exec : async function(cmd,opt={}) {
+    if (!this.container || !this.tempdir) {
+        let { container, data ,tempdir } = await this.dockerInitAsync()
+        this.container = container
+        this.tempdir = tempdir
     }
-    await writeFileAsync(cmdPath,cmd)
 
-    let [ err, data, container ] = await dockerRunAsync(
-      imageName,
-      ["bash","/shell-gei"],
-      streamFile,
-      {
-        Hostconfig: {
-          AutoRemove : true,
-          Binds: [
-            `${cmdPath}:/shell-gei`,
-            `${stdinPath}:/shell-stdin`,
-          ]
-        }
-      }
-    );
-    if (err) { throw err }
-
-    let output = await readFileAsync(outPath,  {encoding : 'utf8'})
-
-    return Object.assign(outputBase,{
-      output: output.replace(/\r\n/g,'\n'),
-    })
+    return await this.dockerExec(this.container,this.tempdir,cmd,opt);
+  },
+  close : async function(){
+      if ( !this.container) { return }
+      //container stop & auto remove
+      await this.container.stop();
   }
 }

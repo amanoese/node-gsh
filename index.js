@@ -7,6 +7,7 @@ const writeFileAsync = util.promisify(fs.writeFile);
 
 const shellExecDocker = require('./src/shellExecDocker');
 const shellautocomplete = require('./src/shellAutoComplete');
+const Prompt = require('inquirer/lib/ui/prompt')
 
 const inquirer = require('inquirer');
 inquirer.registerPrompt('autocomplete',shellautocomplete);
@@ -35,14 +36,29 @@ prog
     suggestOnly : true,
     source: function(answersSoFar, input) {
       return execCmd(cmd(input))
-        .then(({output})=>[output])
+        .then(({stdout})=>[stdout])
         .catch(e=>[JSON.stringify(e,null,'  ')])
     },
   }];
 
+  console.log(inquirer)
+
   let answers = await inquirer.prompt(prompts)
-  let {output} = await execCmd(cmd(answers.from))
-  process.stdout.write(output);
+  let {stdout} = await execCmd(cmd(answers.from))
+  process.stdout.write(stdout);
 });
+
+class CustumPrompt extends Prompt {
+  async onForceClose(){
+    try { 
+        await shellExecDocker.close()
+    } catch (e) {
+        console.error(e)
+    }
+    this.close();
+    process.kill(process.pid, 'SIGINT');
+  }
+}
+inquirer.ui.Prompt = CustumPrompt;
 
 prog.parse(process.argv);
