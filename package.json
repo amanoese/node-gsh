@@ -28,5 +28,11 @@
     "console",
     "ascii",
     "unicode"
-  ]
+  ],
+  "scripts": {
+    "test": "ava"
+  },
+  "devDependencies": {
+    "ava": "^2.1.0"
+  }
 }
