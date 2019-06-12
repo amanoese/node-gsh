@@ -15,49 +15,32 @@ const dockerRunAsync = (imageName,cmd,stream,option,callback)=> {
 }
 
 module.exports = {
-   dockerInitAsync : () => {
-    return new Promise((resolve,reject)=>{
-        docker.createContainer({
-            Image: 'ubuntu',
-            Tty: true,
-            AttachStdout: true,
-            AttachStderr: true,
-            Cmd: ['/bin/bash']
-        },(err, container)=> {
-            if(err){
-                reject(err)
-                return
-            }
-            container.start({}, (err, data)=> {
-                if(err){
-                    reject(err)
-                    return
-                }
-                resolve({ container,data })
-            })
-        })
-    })    
+   dockerInitAsync : async () => {
+    let container = await docker.createContainer({
+        Image: 'ubuntu',
+        Tty: true,
+        Cmd: ['/bin/bash']
+    });
+    let data = await container.start({})
+
+    return { container,data }
   },
-  dockerExec : (container) => {
+  dockerExec : async (container) => {
     let stdout = tempy.file({extension: 'shell-gei'});
     let stderr = tempy.file({extension: 'shell-gei'});
 
-    return new Promise((resolve,reject)=>{
-        container.exec({
-            Cmd: ['bash', '-c', 'echo test $VAR'],
-            Env: ['VAR=ttslkfjsdalkfj'],
-            AttachStdout: true,
-            AttachStderr: true
-            }, function(err, exec) {
-            if (err) { reject(err); return }
-            exec.start(function(err, stream) {
-                if (err) { reject(err); return }
+    let exec = await container.exec({
+        Cmd: ['bash', '-c', 'echo -n unko うんこ 💩'],
+        AttachStdout: true,
+        AttachStderr: true
+    });
 
-                stream.on('end', () => {
-                    resolve({ stdout, stderr });
-                });
-                docker.modem.demuxStream(stream, fs.createWriteStream(stdout),fs.createWriteStream(stderr));
-            });
+    let stream = await exec.start({});
+    docker.modem.demuxStream(stream.output, fs.createWriteStream(stdout),fs.createWriteStream(stderr));
+
+    return await new Promise((resolve,reject)=>{
+        stream.output.on('end', () => {
+            resolve({ stdout, stderr });
         });
     });
   },
