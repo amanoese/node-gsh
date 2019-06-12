@@ -16,27 +16,39 @@ const dockerRunAsync = (imageName,cmd,stream,option,callback)=> {
 
 const dockerCreateAsync = (option,callback)=> {
   return new Promise((resolve,reject)=>{
-    docker.createContainer(option,(...args)=> resolve(args));
+    docker.createContainer(option,(err, container)=> {
+    if(err) {
+        reject(err)
+        return
+    }
+    resolve(container)
+    });
+  })
+}
+
+const conteinerStartAsync = (container,option={})=> {
+  return new Promise((resolve,reject)=>{
+    container.start(option, (err, data)=> {
+    if(err) {
+        reject(err)
+        return
+    }
+    resolve(data)
+    });
   })
 }
 
 module.exports = {
-   dockerStartAsync : async () => {
-    let [ err, container ] = await dockerCreateAsync({
+   dockerInitAsync : async () => {
+    let container = await dockerCreateAsync({
       Image: 'ubuntu',
       Tty: true,
       Cmd: ['/bin/bash']
-    })
-
-    return await new Promise((resolve,reject)=>{
-      container.start({}, function(err, data) {
-        if(err) {
-          reject(err)
-          return
-        }
-        resolve({ container,data })
-      });
     });
+
+    let data = await conteinerStartAsync(container);
+
+    return { container,data }
   },
   exec : async (cmd,opt={}) => {
     let stdinPath = opt.stdinPath || '/dev/null'
