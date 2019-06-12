@@ -14,8 +14,9 @@ test('docker run',async t =>{
 
 test.only('docker start && exec ',async t =>{
   //let outstr = await shellDockerExec.exec('echo Hello,World!')
-  let { container,data } = await shellExecDocker.dockerInitAsync();
-  let { stdout, stderr } = await shellExecDocker.dockerExec(container);
+  let { container,tempdir } = await shellExecDocker.dockerInitAsync();
+  let { stdout, stderr } = await shellExecDocker.dockerExec(container,tempdir,'echo hello😆😆');
+
   console.log({ stdout: (await readFileAsync(stdout)).toString() });
   console.log({ stderr: (await readFileAsync(stderr)).toString() });
   t.pass();

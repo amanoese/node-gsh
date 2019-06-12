@@ -15,22 +15,32 @@ const dockerRunAsync = (imageName,cmd,stream,option,callback)=> {
 }
 
 module.exports = {
-   dockerInitAsync : async () => {
+  dockerInitAsync : async (options={}) => {
+    let tempdir = tempy.directory();
     let container = await docker.createContainer({
         Image: 'ubuntu',
         Tty: true,
-        Cmd: ['/bin/bash']
+        Cmd: ['/bin/bash'],
+        Hostconfig: {
+          AutoRemove : true,
+          Binds: [
+            `${tempdir}:/app`,
+          ]
+        },
+        ...options
     });
     let data = await container.start({})
 
-    return { container,data }
+    return { container, data ,tempdir }
   },
-  dockerExec : async (container) => {
+  dockerExec : async (container,tempdir,cmd) => {
+    await writeFileAsync(tempdir + '/shell-gei',cmd)
+
     let stdout = tempy.file({extension: 'shell-gei'});
     let stderr = tempy.file({extension: 'shell-gei'});
 
     let exec = await container.exec({
-        Cmd: ['bash', '-c', 'echo -n unko うんこ 💩'],
+        Cmd: ['bash', '/app/shell-gei'],
         AttachStdout: true,
         AttachStderr: true
     });
