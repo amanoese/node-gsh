@@ -1,4 +1,8 @@
 const test = require('ava');
+const fs    = require('fs');
+const util  = require('util');
+const readFileAsync  = util.promisify(fs.readFile);
+
 let shellExecDocker = require('../src/shellExecDocker');
 
 test('docker run',async t =>{
@@ -8,9 +12,11 @@ test('docker run',async t =>{
   t.pass();
 });
 
-test.only('docker start',async t =>{
+test.only('docker start && exec ',async t =>{
   //let outstr = await shellDockerExec.exec('echo Hello,World!')
-  let conteiner = await shellExecDocker.dockerInitAsync()
-  console.log(JSON.stringify(conteiner,null,'  '));
+  let { container,data } = await shellExecDocker.dockerInitAsync();
+  let { stdout, stderr } = await shellExecDocker.dockerExec(container);
+  console.log({ stdout: (await readFileAsync(stdout)).toString() });
+  console.log({ stderr: (await readFileAsync(stderr)).toString() });
   t.pass();
 });

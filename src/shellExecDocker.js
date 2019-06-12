@@ -20,6 +20,8 @@ module.exports = {
         docker.createContainer({
             Image: 'ubuntu',
             Tty: true,
+            AttachStdout: true,
+            AttachStderr: true,
             Cmd: ['/bin/bash']
         },(err, container)=> {
             if(err){
@@ -35,6 +37,29 @@ module.exports = {
             })
         })
     })    
+  },
+  dockerExec : (container) => {
+    let stdout = tempy.file({extension: 'shell-gei'});
+    let stderr = tempy.file({extension: 'shell-gei'});
+
+    return new Promise((resolve,reject)=>{
+        container.exec({
+            Cmd: ['bash', '-c', 'echo test $VAR'],
+            Env: ['VAR=ttslkfjsdalkfj'],
+            AttachStdout: true,
+            AttachStderr: true
+            }, function(err, exec) {
+            if (err) { reject(err); return }
+            exec.start(function(err, stream) {
+                if (err) { reject(err); return }
+
+                stream.on('end', () => {
+                    resolve({ stdout, stderr });
+                });
+                docker.modem.demuxStream(stream, fs.createWriteStream(stdout),fs.createWriteStream(stderr));
+            });
+        });
+    });
   },
   exec : async (cmd,opt={}) => {
     let stdinPath = opt.stdinPath || '/dev/null'
