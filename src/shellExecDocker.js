@@ -9,17 +9,12 @@ const readFileAsync  = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
 const copyFileAsync = util.promisify(fs.copyFile);
 
-const dockerRunAsync = (imageName,cmd,stream,option,callback)=> {
-  return new Promise((resolve,reject)=>{
-    docker.run(imageName,cmd,stream,option,(...args)=> resolve(args));
-  })
-}
-
 module.exports = {
   dockerInitAsync : async (options={}) => {
+    let Image = options.Image || 'ubuntu';
     let tempdir = tempy.directory();
     let container = await docker.createContainer({
-      Image: 'ubuntu',
+      Image,
       Tty: true,
       Cmd: ['/bin/bash'],
       Hostconfig: {
@@ -48,7 +43,7 @@ module.exports = {
     let stderr = tempy.file({extension: 'shell-gei'});
 
     let exec = await container.exec({
-      Cmd: ['bash', 'shell-gei'],
+      Cmd: ['/bin/bash', 'shell-gei'],
       AttachStdout: true,
       AttachStderr: true
     });
@@ -68,14 +63,14 @@ module.exports = {
   },
   container : null,
   tempdir : null,
-  exec : async function(cmd,opt={}) {
+  exec : async function(cmd,initOption={},execOption={}) {
     if (!this.container || !this.tempdir) {
-      let { container, data ,tempdir } = await this.dockerInitAsync()
+      let { container, data ,tempdir } = await this.dockerInitAsync(initOption)
       this.container = container
       this.tempdir = tempdir
     }
 
-    return await this.dockerExec(this.container,this.tempdir,cmd,opt);
+    return await this.dockerExec(this.container,this.tempdir,cmd,execOption);
   },
   close : async function(){
     if ( !this.container) { return }
