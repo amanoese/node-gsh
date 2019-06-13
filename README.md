@@ -12,8 +12,6 @@ $ npm i -g node-gsh
 Docker
 
 must avoid having to use sudo when you use the docker command.
-
-If your system need to use sudo when you use the docker command.
 ```bash
 $ sudo groupadd docker
 $ sudo usermod -aG docker $USER

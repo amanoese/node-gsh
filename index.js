@@ -28,6 +28,8 @@ prog
   let cmd = (input) => cmdsuffix != null ? `${cmdsuffix}${input||''}` : input
   let execCmd = async (cmd) => await shellExecDocker.exec(cmd,{Image},{stdinPath})
 
+  let stdoutCache = ''
+
   let prompts = [{
     type: 'autocomplete',
     name: 'from',
@@ -36,7 +38,12 @@ prog
     suggestOnly : true,
     source: function(answersSoFar, input) {
       return execCmd(cmd(input))
-        .then(({stdout})=>[stdout])
+        .then(({stdout})=>{
+          if(stdout != null && stdout != '') {
+            stdoutCache = stdout
+          }
+          return [stdoutCache]
+        })
         .catch(e=>[JSON.stringify(e,null,'  ')])
     },
   }];
