@@ -41,8 +41,6 @@ prog
     },
   }];
 
-  console.log(inquirer)
-
   let answers = await inquirer.prompt(prompts)
   let {stdout} = await execCmd(cmd(answers.from))
   process.stdout.write(stdout);
@@ -50,7 +48,7 @@ prog
 
 class CustumPrompt extends Prompt {
   async onForceClose(){
-    try { 
+    try {
         await shellExecDocker.close()
     } catch (e) {
         console.error(e)
