@@ -1,6 +1,6 @@
 {
   "name": "node-gsh",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "MIT",
   "repository": "amanoese/node-gsh",
   "author": "Seito Taka",
@@ -10,7 +10,6 @@
   "dependencies": {
     "caporal": "^1.2.0",
     "cli-autocomplete": "^0.4.1",
-    "dockernode": "^0.1.0",
     "dockerode": "^2.5.8",
     "execa": "^1.0.0",
     "get-stdin": "^7.0.0",
